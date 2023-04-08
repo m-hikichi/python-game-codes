@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  dev:
+    image: python:3.10
+    container_name: game-collection
+    volumes:
+      - ../:/app
+    working_dir: /app
+    tty: true
