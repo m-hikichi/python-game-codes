@@ -137,7 +137,7 @@ class Maze:
         """
         迷路のサイズを取得する
 
-        Returns
+        Returns:
             tuple: 迷路の横幅と高さを格納したタプル
         """
         return (self.width, self.height)
@@ -147,10 +147,10 @@ class Maze:
         指定された位置のセルの種類を取得する
 
         Args: 
-        x (int): 取得するセルのX座標
-        y (int): 取得するセルのY座標
+            x (int): 取得するセルのX座標
+            y (int): 取得するセルのY座標
 
-        Returns
+        Returns:
             Cell: 指定された位置の Cell オブジェクト
         """
         return self.__maze[y][x]
