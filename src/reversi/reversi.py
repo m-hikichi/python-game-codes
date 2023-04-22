@@ -1,5 +1,5 @@
 from enum import Enum, unique
-from typing import Tuple
+from typing import Tuple, List
 
 
 class Reversi:
@@ -44,6 +44,63 @@ class Reversi:
             output += "\n"
         return output
 
+    def get_placeable_position(self, stone_color: Stone) -> List[Tuple[int, int]]:
+        """
+        指定された石の色に対して，盤面上で置くことができる全ての座標のリストを返す
+
+        Args:
+            stone_color (Stone): 石の色
+
+        Returns:
+            List[Tuple[int, int]]: 石を置くことができる座標のリスト，各座標は(x, y)の形式
+        """
+        placeable_position = []
+        for y in range(Reversi.HEIGHT):
+            for x in range(Reversi.WIDTH):
+                # 対象の座標に石を置けるかを確認
+                if self.__is_placeable_position(x, y, stone_color):
+                    placeable_position.append((x, y))
+        return placeable_position
+
+    def __is_placeable_position(self, x: int, y: int, stone_color: Stone) -> bool:
+        """
+        指定された座標に指定された石の色を置くことができるかどうか判定する
+
+        Args:
+            x (int): 確認する位置の x 座標
+            y (int): 確認する位置の y 座標
+            stone_color (Stone): 置く石の色
+
+        Returns:
+            bool: 指定された座標に指定された石の色を置くことができる場合はTrue, できない場合はFalse
+        """
+        # 指定された座標にすでに石がある場合，Falseを返す
+        if self.__board[y][x] != Reversi.Stone.EMPTY:
+            return False
+        
+        opposite_stone_color = Reversi.Stone.opposite(stone_color)
+        for x_vec, y_vec in self.__get_directions():
+            # 盤面外，または確認方向に反対色の石がない場合は，次の方向をチェック
+            if not self.__is_valid_position(x + x_vec, y + y_vec) or self.__board[y + y_vec][x + x_vec] != opposite_stone_color:
+                continue
+
+            for step in range(1, 8):
+                x_pos = x + x_vec * step
+                y_pos = y + y_vec * step
+
+                # 盤面外の場合は処理をスキップ
+                if not self.__is_valid_position(x_pos, y_pos):
+                    break
+
+                # 指定した色の石が見つかる前に，空きがある場合は置き換えることができないので，処理を飛ばす
+                if self.__board[y_pos][x_pos] == Reversi.Stone.EMPTY:
+                    break
+                
+                # 反対色の石を挟むことができる場合，Trueを返す
+                if self.__board[y_pos][x_pos] == stone_color:
+                    return True
+        return False
+
     def put_stone(self, x: int, y: int, stone_color: Stone) -> None:
         """
         与えられた位置に石を置き，ボードを更新する
@@ -55,8 +112,8 @@ class Reversi:
         """
         opposite_stone_color = Reversi.Stone.opposite(stone_color)
         for x_vec, y_vec in Reversi.__get_directions():
-            # 確認方向に反対色の石がない場合は，処理を飛ばす
-            if self.__board[y + y_vec][x + x_vec] != opposite_stone_color:
+            # 盤面外，または確認方向に反対色の石がない場合は，次の方向をチェック
+            if not self.__is_valid_position(x + x_vec, y + y_vec) or self.__board[y + y_vec][x + x_vec] != opposite_stone_color:
                 continue
             self.__flip_stones_in_direction(x, y, x_vec, y_vec, stone_color)
 
@@ -76,7 +133,7 @@ class Reversi:
             y_pos = y + y_vec * step
 
             # 盤面外の場合は処理をスキップ
-            if not Reversi.__is_valid_position(x_pos, y_pos):
+            if not self.__is_valid_position(x_pos, y_pos):
                 break
 
             # 指定した色の石が見つかる前に，空きがある場合は置き換えることができないので，処理を飛ばす
