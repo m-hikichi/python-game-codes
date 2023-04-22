@@ -40,6 +40,17 @@ def test_init_reverisi(init_reversi):
     assert reversi.get_stone(4, 3) == Reversi.Stone.WHITE
 
 
+def test_get_placeable_position(init_reversi):
+    # GIVEN
+
+    # WHEN
+    reversi = init_reversi
+
+    # THEN
+    assert set([(4, 2), (5, 3), (2, 4), (3, 5)]) == set(reversi.get_placeable_position(Reversi.Stone.BLACK))
+    assert set([(3, 2), (2, 3), (5, 4), (4, 5)]) == set(reversi.get_placeable_position(Reversi.Stone.WHITE))
+
+
 def test_put_stone(init_reversi):
     # GIVEN
     reversi = init_reversi
