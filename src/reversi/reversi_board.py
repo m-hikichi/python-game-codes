@@ -146,6 +146,18 @@ class ReversiBoard:
                     self.__board[y + y_vec * s][x + x_vec * s] = stone_color
                 break
 
+    def is_game_over(self) -> bool:
+        """
+        ゲームを続行できないかどうかを確認する，つまり黒も白も石を置けない状態になったかを確認する
+
+        Returns:
+            bool: ゲームが終了ならTrue, ゲームを続行できる場合はFalse
+        """
+        black_placeable_postions = self.get_placeable_positions(ReversiBoard.Stone.BLACK)
+        white_placeable_postions = self.get_placeable_positions(ReversiBoard.Stone.WHITE)
+        return not (black_placeable_postions or white_placeable_postions)
+
+
     def count_stone(self, stone_color: Stone) -> int:
         """
         指定された石の色の数をカウントする
