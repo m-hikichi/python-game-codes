@@ -2,7 +2,7 @@ from enum import Enum, unique
 from typing import Tuple, List
 
 
-class Reversi:
+class ReversiBoard:
     WIDTH = 8
     HEIGHT = 8
 
@@ -13,7 +13,7 @@ class Reversi:
         WHITE = "●"
 
         @classmethod
-        def opposite(cls, stone_color: 'Reversi.Stone') -> 'Reversi.Stone':
+        def opposite(cls, stone_color: 'ReversiBoard.Stone') -> 'ReversiBoard.Stone':
             if stone_color == cls.BLACK:
                 return cls.WHITE
             elif stone_color == cls.WHITE:
@@ -23,12 +23,12 @@ class Reversi:
 
     def __init__(self):
         self.__board = [
-            [Reversi.Stone.EMPTY for w in range(Reversi.WIDTH)] for h in range(Reversi.HEIGHT)
+            [ReversiBoard.Stone.EMPTY for w in range(ReversiBoard.WIDTH)] for h in range(ReversiBoard.HEIGHT)
         ]
-        self.__board[3][3] = Reversi.Stone.BLACK
-        self.__board[4][4] = Reversi.Stone.BLACK
-        self.__board[3][4] = Reversi.Stone.WHITE
-        self.__board[4][3] = Reversi.Stone.WHITE
+        self.__board[3][3] = ReversiBoard.Stone.BLACK
+        self.__board[4][4] = ReversiBoard.Stone.BLACK
+        self.__board[3][4] = ReversiBoard.Stone.WHITE
+        self.__board[4][3] = ReversiBoard.Stone.WHITE
 
     def __str__(self) -> str:
         """
@@ -44,7 +44,7 @@ class Reversi:
             output += "\n"
         return output
 
-    def get_placeable_position(self, stone_color: Stone) -> List[Tuple[int, int]]:
+    def get_placeable_positions(self, stone_color: Stone) -> List[Tuple[int, int]]:
         """
         指定された石の色に対して，盤面上で置くことができる全ての座標のリストを返す
 
@@ -55,8 +55,8 @@ class Reversi:
             List[Tuple[int, int]]: 石を置くことができる座標のリスト，各座標は(x, y)の形式
         """
         placeable_position = []
-        for y in range(Reversi.HEIGHT):
-            for x in range(Reversi.WIDTH):
+        for y in range(ReversiBoard.HEIGHT):
+            for x in range(ReversiBoard.WIDTH):
                 # 対象の座標に石を置けるかを確認
                 if self.__is_placeable_position(x, y, stone_color):
                     placeable_position.append((x, y))
@@ -75,10 +75,10 @@ class Reversi:
             bool: 指定された座標に指定された石の色を置くことができる場合はTrue, できない場合はFalse
         """
         # 指定された座標にすでに石がある場合，Falseを返す
-        if self.__board[y][x] != Reversi.Stone.EMPTY:
+        if self.__board[y][x] != ReversiBoard.Stone.EMPTY:
             return False
         
-        opposite_stone_color = Reversi.Stone.opposite(stone_color)
+        opposite_stone_color = ReversiBoard.Stone.opposite(stone_color)
         for x_vec, y_vec in self.__get_directions():
             # 盤面外，または確認方向に反対色の石がない場合は，次の方向をチェック
             if not self.__is_valid_position(x + x_vec, y + y_vec) or self.__board[y + y_vec][x + x_vec] != opposite_stone_color:
@@ -93,7 +93,7 @@ class Reversi:
                     break
 
                 # 指定した色の石が見つかる前に，空きがある場合は置き換えることができないので，処理を飛ばす
-                if self.__board[y_pos][x_pos] == Reversi.Stone.EMPTY:
+                if self.__board[y_pos][x_pos] == ReversiBoard.Stone.EMPTY:
                     break
                 
                 # 反対色の石を挟むことができる場合，Trueを返す
@@ -110,8 +110,8 @@ class Reversi:
             y (int): 位置を置く位置の y 座標
             stone_color (Stone): 置く石の色（BLACKまたはWHITE）
         """
-        opposite_stone_color = Reversi.Stone.opposite(stone_color)
-        for x_vec, y_vec in Reversi.__get_directions():
+        opposite_stone_color = ReversiBoard.Stone.opposite(stone_color)
+        for x_vec, y_vec in ReversiBoard.__get_directions():
             # 盤面外，または確認方向に反対色の石がない場合は，次の方向をチェック
             if not self.__is_valid_position(x + x_vec, y + y_vec) or self.__board[y + y_vec][x + x_vec] != opposite_stone_color:
                 continue
@@ -126,7 +126,7 @@ class Reversi:
             y (int): 開始位置の y 座標
             x_vec (int): 方向の x オフセット
             y_vec (int): 方向の y オフセット
-            stone_color (Reversi.Stone): 置く石の色（BLACKまたはWHITE）
+            stone_color (ReversiBoard.Stone): 置く石の色（BLACKまたはWHITE）
         """
         for step in range(1, 8):
             x_pos = x + x_vec * step
@@ -137,7 +137,7 @@ class Reversi:
                 break
 
             # 指定した色の石が見つかる前に，空きがある場合は置き換えることができないので，処理を飛ばす
-            if self.__board[y_pos][x_pos] == Reversi.Stone.EMPTY:
+            if self.__board[y_pos][x_pos] == ReversiBoard.Stone.EMPTY:
                 break
 
             # 指定した色の石が見つかった場合，あいだの石を置き換える
@@ -151,7 +151,7 @@ class Reversi:
         指定された石の色の数をカウントする
 
         Args:
-            stone_color (Reversi.Stone): カウントする石の色
+            stone_color (ReversiBoard.Stone): カウントする石の色
 
         Returns:
             int: 指定された石の色の数
@@ -172,7 +172,7 @@ class Reversi:
             y (int): 取得する石の y 座標
 
         Returns:
-            Reversi.Stone: 指定された座標の石
+            ReversiBoard.Stone: 指定された座標の石
         """
         return self.__board[y][x]
 
