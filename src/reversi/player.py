@@ -8,7 +8,13 @@ from typing import Tuple, List
 
 class ReversiPlayer(ABC):
     def __init__(self, stone_color: ReversiBoard.Stone):
-        self.stone_color = stone_color
+        if stone_color == ReversiBoard.Stone.BLACK or stone_color == ReversiBoard.Stone.WHITE:
+            self._stone_color = stone_color
+        else:
+            raise ValueError("Invalid stone color. Must be either ReversiBoard.Stone.BLACK or ReversiBoard.Stone.WHITE")
+
+    def get_stone_color(self) -> ReversiBoard.Stone:
+        return self._stone_color
 
     @abstractmethod
     def play(self, reversi_board: ReversiBoard) -> None:
@@ -20,14 +26,14 @@ class ReversiHumanPlayer(ReversiPlayer):
         super().__init__(stone_color)
 
     def play(self, reversi_board: ReversiBoard) -> None:
-        placeable_positions = reversi_board.get_placeable_positions(self.stone_color)
+        placeable_positions = reversi_board.get_placeable_positions(self._stone_color)
         if not placeable_positions:
             print("No placeable position. Skipping your turn.")
             return
 
         chosen_position = self.__choose_position_with_arrow_keys(reversi_board, placeable_positions)
         put_x, put_y = chosen_position
-        reversi_board.put_stone(put_x, put_y, self.stone_color)
+        reversi_board.put_stone(put_x, put_y, self._stone_color)
 
     def __choose_position_with_arrow_keys(self, reversi_board: ReversiBoard, placeable_positions: List[Tuple[int, int]]) -> Tuple[int, int]:
         def display_positions(stdscr, select_index):
@@ -39,7 +45,7 @@ class ReversiHumanPlayer(ReversiPlayer):
             for row, line in enumerate(displayed_board_rows):
                 if row == selected_position_y:
                     modified_line = list(line)
-                    modified_line[2 * selected_position_x + 1] = str(self.stone_color.value)
+                    modified_line[2 * selected_position_x + 1] = str(self._stone_color.value)
                     line = ''.join(modified_line)
                 stdscr.addstr(row + 1, 0, line)
             stdscr.addstr(10, 0, "Valid play:")
@@ -71,11 +77,11 @@ class ReversiRandomPlayer(ReversiPlayer):
         super().__init__(stone_color)
 
     def play(self, reversi_board: ReversiBoard) -> None:
-        placeable_positions = reversi_board.get_placeable_positions(self.stone_color)
+        placeable_positions = reversi_board.get_placeable_positions(self._stone_color)
         if placeable_positions:
             selected_position = random.choice(placeable_positions)
             put_x, put_y = selected_position
-            reversi_board.put_stone(put_x, put_y, self.stone_color)
+            reversi_board.put_stone(put_x, put_y, self._stone_color)
 
 
 class ReversiMinimaxPlayer(ReversiPlayer):
@@ -84,10 +90,10 @@ class ReversiMinimaxPlayer(ReversiPlayer):
         self.search_depth = search_depth
 
     def play(self, reversi_board: ReversiBoard) -> None:
-        _, best_play = self.__minimax(reversi_board, self.search_depth, self.stone_color)
+        _, best_play = self.__minimax(reversi_board, self.search_depth, self._stone_color)
         if best_play:
             put_x, put_y = best_play
-            reversi_board.put_stone(put_x, put_y, self.stone_color)
+            reversi_board.put_stone(put_x, put_y, self._stone_color)
 
     def __minimax(self, reversi_board: ReversiBoard, depth: int, player_color: ReversiBoard.Stone) -> (int, Tuple[int, int]):
         if depth == 0 or reversi_board.is_game_over():
@@ -97,7 +103,7 @@ class ReversiMinimaxPlayer(ReversiPlayer):
         if not placeable_positions:
             return self.__evaluate(reversi_board, player_color), None
 
-        best_score = float("-inf") if player_color == self.stone_color else float("inf")
+        best_score = float("-inf") if player_color == self._stone_color else float("inf")
         best_play = None
         for placeable_position in placeable_positions:
             put_x, put_y = placeable_position
@@ -105,7 +111,7 @@ class ReversiMinimaxPlayer(ReversiPlayer):
             new_board.put_stone(put_x, put_y, player_color)
             score, _ = self.__minimax(new_board, depth - 1, ReversiBoard.Stone.opposite(player_color))
 
-            if player_color == self.stone_color:
+            if player_color == self._stone_color:
                 if score > best_score:
                     best_score = score
                     best_play = placeable_position
