@@ -40,8 +40,8 @@ class ReversiBoard:
         output = ""
         for rows in self.__board:
             for stone in rows:
-                output += stone.value
-            output += "\n"
+                output += ("|" + stone.value)
+            output += "|\n"
         return output
 
     def get_placeable_positions(self, stone_color: Stone) -> List[Tuple[int, int]]:

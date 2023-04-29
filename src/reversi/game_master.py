@@ -1,5 +1,5 @@
 from reversi_board import ReversiBoard
-from player import ReversiPlayer, ReversiRandomPlayer, ReversiMinimaxPlayer
+from player import *
 from typing import Optional
 
 
@@ -32,7 +32,7 @@ class ReversiGameMaster():
 
 if __name__=="__main__":
     black_player = ReversiRandomPlayer(ReversiBoard.Stone.BLACK)
-    white_player = ReversiMinimaxPlayer(ReversiBoard.Stone.WHITE)
+    white_player = ReversiHumanPlayer(ReversiBoard.Stone.WHITE)
     game_master = ReversiGameMaster(black_player, white_player)
     game_master.play_game()
     if game_master.get_winner() is not None:
