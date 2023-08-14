@@ -9,12 +9,13 @@ def test_Suit():
         "♡",
         "♢",
         "♣",
+        "JOKER",
     ]
 
     # WHEN
 
     # THEN
-    assert len(Suit) == 4
+    assert len(Suit) == 5
 
     for suit, suit_mark in zip(Suit, suit_mark_list):
         assert suit.mark == suit_mark
