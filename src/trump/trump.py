@@ -14,11 +14,13 @@ class Suit(Enum):
         HEART (Suit): ハート
         DIA (Suit): ダイヤ
         CLUB (Suit): クラブ
+        JOKER (Suit): ジョーカー
     """
     SPADE = "♠"
     HEART = "♡"
     DIA = "♢"
     CLUB = "♣"
+    JOKER = "JOKER"
 
     def __init__(self, mark):
         self.mark = mark
@@ -166,9 +168,12 @@ class Card:
         カードのスートと数字を表示する
 
         Returns:
-            str: カードのスートと数字. 例: "♠︎-A"
+            str: カードのスートと数字. 例: "♠︎-A", "♠︎-2", "♡-K", "JOKER"
         """
-        return self.suit.mark + "-" + self.number.mark
+        if self.suit == Suit.JOKER:
+            return self.suit.mark
+        else:
+            return self.suit.mark + "-" + self.number.mark
 
 
 class Trump:
@@ -179,7 +184,7 @@ class Trump:
         card_list (list): トランプのカードを表すCardオブジェクトのリスト
     
     Methods:
-        __init__(): 52枚の標準的なトランプカードを含むトランプの一組を初期化する
+        __init__(): トランプ一組を初期化する（JOKERを含む場合:54枚, JOKERを含まない場合:52枚）
         __str__(): カードリストの文字列表現を返す
         __len__(): 残りのカード枚数を返す
         shuffle(): カードをシャッフルする
@@ -187,14 +192,19 @@ class Trump:
         search(suit=None, number=None): カードを検索する. suitやnumberに指定がある場合, 条件に一致するカードを返す
     """
 
-    def __init__(self):
+    def __init__(self, include_jokers: bool=False):
         """
-        52枚の標準的なトランプカードを含むトランプの一組を初期化する
+        トランプ一組を初期化する（JOKERを含む場合:54枚, JOKERを含まない場合:52枚）
         """
         self.card_list = []
         for s in Suit:
+            if s == Suit.JOKER:
+                continue
             for n in Number:
                 self.card_list.append(Card(suit=s, number=n))
+        if include_jokers:
+            self.card_list.append(Card(suit=Suit.JOKER, number=None))
+            self.card_list.append(Card(suit=Suit.JOKER, number=None))
 
     def __str__(self) -> str:
         """
