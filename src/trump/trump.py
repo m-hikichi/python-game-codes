@@ -25,8 +25,8 @@ class Suit(Enum):
     def __init__(self, mark):
         self.mark = mark
 
-    @classmethod
-    def mark2Suit(cls, mark: str) -> 'Suit':
+    @staticmethod
+    def mark2Suit(mark: str) -> 'Suit':
         """
         マークを表す記号を Suit に変換する静的メソッド
 
@@ -103,8 +103,8 @@ class Number(Enum):
         self.num = num
         self.mark = mark
 
-    @classmethod
-    def int2Number(cls, num: int) -> 'Number':
+    @staticmethod
+    def int2Number(num: int) -> 'Number':
         """
         整数を Number に変換する静的メソッド
 
@@ -119,8 +119,8 @@ class Number(Enum):
             if n.num == num:
                 return n
 
-    @classmethod
-    def mark2Number(cls, mark: str) -> 'Number':
+    @staticmethod
+    def mark2Number(mark: str) -> 'Number':
         """
         文字列を Number に変換する静的メソッド
 

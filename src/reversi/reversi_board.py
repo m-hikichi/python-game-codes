@@ -12,12 +12,12 @@ class ReversiBoard:
         BLACK = "○"
         WHITE = "●"
 
-        @classmethod
-        def opposite(cls, stone_color: 'ReversiBoard.Stone') -> 'ReversiBoard.Stone':
-            if stone_color == cls.BLACK:
-                return cls.WHITE
-            elif stone_color == cls.WHITE:
-                return cls.BLACK
+        @staticmethod
+        def opposite(stone_color: 'ReversiBoard.Stone') -> 'ReversiBoard.Stone':
+            if stone_color == ReversiBoard.Stone.BLACK:
+                return ReversiBoard.Stone.WHITE
+            elif stone_color == ReversiBoard.Stone.WHITE:
+                return ReversiBoard.Stone.BLACK
             else:
                 return None
 
@@ -188,8 +188,8 @@ class ReversiBoard:
         """
         return self.__board[y][x]
 
-    @classmethod
-    def __get_directions(cls) -> Tuple[int, int]:
+    @staticmethod
+    def __get_directions() -> Tuple[int, int]:
         """
         周囲の石を確認するためのすべての可能な方向（8方向）を生成する
 
@@ -202,8 +202,8 @@ class ReversiBoard:
                     continue
                 yield x_vec, y_vec
 
-    @classmethod
-    def __is_valid_position(cls, x: int, y: int) -> bool:
+    @staticmethod
+    def __is_valid_position(x: int, y: int) -> bool:
         """
         与えられた位置がボード内にあるかどうかを確認する
 
@@ -214,4 +214,4 @@ class ReversiBoard:
         Returns:
             bool: 位置がボード内にある場合は True, ボード外の場合は False
         """
-        return 0 <= x < cls.WIDTH and 0 <= y < cls.HEIGHT
+        return 0 <= x < ReversiBoard.WIDTH and 0 <= y < ReversiBoard.HEIGHT
