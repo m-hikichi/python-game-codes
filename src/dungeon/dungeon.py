@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, unique
 import random
 import numpy as np
 
@@ -30,23 +30,33 @@ class Dungeon:
 
     def __create_rooms(self):
         def split_map(sub_map):
-            sub_map_height, sub_map_width = sub_map.shape
+            @unique
+            class SplitDirection(Enum):
+                HORIZON = "Horizon"
+                VERTICAL = "Vertical"
 
-            is_horizon_split = random.choice([True, False])
-            if is_horizon_split:
-                if sub_map_width > (Dungeon.MIN_ROOM_WIDTH+(Dungeon.ROOM_MARGIN*2))*2:
-                    split_x = random.randint(Dungeon.MIN_ROOM_WIDTH+(Dungeon.ROOM_MARGIN*2), sub_map_width-Dungeon.MIN_ROOM_WIDTH+(Dungeon.ROOM_MARGIN*2))
-                    yield from split_map(sub_map[:, 0:split_x])
-                    yield from split_map(sub_map[:, split_x+1:sub_map_width])
-                else:
-                    yield sub_map
-            else:
-                if sub_map_height > (Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2))*2:
-                    split_y = random.randint(Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2), sub_map_height-Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2))
-                    yield from split_map(sub_map[0:split_y, :])
-                    yield from split_map(sub_map[split_y+1:sub_map_height, :])
-                else:
-                    yield sub_map
+            split_directions = []
+            sub_map_height, sub_map_width = sub_map.shape
+            if sub_map_width > (Dungeon.MIN_ROOM_WIDTH+(Dungeon.ROOM_MARGIN*2))*2+1:
+                split_directions.append(SplitDirection.HORIZON)
+            if sub_map_height > (Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2))*2+1:
+                split_directions.append(SplitDirection.VERTICAL)
+
+            if len(split_directions) == 0:
+                yield sub_map
+                return
+
+            split_direction = random.choice(split_directions)
+            if split_direction == SplitDirection.HORIZON:
+                split_x = random.randint(Dungeon.MIN_ROOM_WIDTH+(Dungeon.ROOM_MARGIN*2)+1, sub_map_width-(Dungeon.MIN_ROOM_WIDTH+(Dungeon.ROOM_MARGIN*2)+1))
+                yield from split_map(sub_map[:, 0:split_x])
+                yield from split_map(sub_map[:, split_x+1:sub_map_width])
+                sub_map[:, split_x] = Dungeon.Area.LOAD
+            if split_direction == SplitDirection.VERTICAL:
+                split_y = random.randint(Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2)+1, sub_map_height-(Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2)+1))
+                yield from split_map(sub_map[0:split_y, :])
+                yield from split_map(sub_map[split_y+1:sub_map_height, :])
+                sub_map[split_y, :] = Dungeon.Area.LOAD
 
         def create_room(sub_map):
             sub_map_height, sub_map_width = sub_map.shape
