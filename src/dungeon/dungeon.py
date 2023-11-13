@@ -11,7 +11,7 @@ class Dungeon:
     class Area(Enum):
         WALL = "■"
         ROOM = " "
-        LOAD = " "
+        LOAD = "X"
 
     def __init__(self, dungeon_width, dungeon_height):
         self.__dungeon_width = dungeon_width
@@ -76,7 +76,6 @@ class Dungeon:
                 node.split_direction = split_direction
                 node.left_node = split_map(sub_map[:, 0:split_x])
                 node.right_node = split_map(sub_map[:, split_x+1:sub_map_width])
-                node.sub_map[:, split_x] = Dungeon.Area.LOAD
                 return node
             if split_direction == SplitDirection.VERTICAL:
                 split_y = random.randint(Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2)+1, sub_map_height-(Dungeon.MIN_ROOM_HEIGHT+(Dungeon.ROOM_MARGIN*2)+1))
@@ -84,7 +83,6 @@ class Dungeon:
                 node.split_direction = split_direction
                 node.left_node = split_map(sub_map[0:split_y, :])
                 node.right_node = split_map(sub_map[split_y+1:sub_map_height, :])
-                node.sub_map[split_y, :] = Dungeon.Area.LOAD
                 return node
 
         def create_room(sub_map):
@@ -100,7 +98,40 @@ class Dungeon:
 
             sub_map[room_left_upper_y:room_left_upper_y+room_height, room_left_upper_x:room_left_upper_x+room_width] = Dungeon.Area.ROOM
 
+        def create_load(sub_binary_tree_map):
+            left_node = list(BinaryTree.get_leaf_node(sub_binary_tree_map.left_node))[-1]
+            left_node_map_x = np.where(left_node.sub_map==Dungeon.Area.ROOM)[1][-1]
+            left_node_map_y = np.where(left_node.sub_map==Dungeon.Area.ROOM)[0][-1]
+            left_node_sub_map_height, left_node_sub_map_width = left_node.sub_map.shape
+            if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
+                left_node.sub_map[left_node_map_y, left_node_map_x:left_node_sub_map_width] = Dungeon.Area.LOAD
+            if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
+                left_node.sub_map[left_node_map_y:left_node_sub_map_height, left_node_map_x] = Dungeon.Area.LOAD
+
+            right_node = list(BinaryTree.get_leaf_node(sub_binary_tree_map.right_node))[0]
+            right_node_map_x = np.where(right_node.sub_map==Dungeon.Area.ROOM)[1][0]
+            right_node_map_y = np.where(right_node.sub_map==Dungeon.Area.ROOM)[0][0]
+            right_node_sub_map_height, right_node_sub_map_width = right_node.sub_map.shape
+            if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
+                right_node.sub_map[right_node_map_y, 0:right_node_map_x+1] = Dungeon.Area.LOAD
+            if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
+                right_node.sub_map[0:right_node_map_y+1, right_node_map_x] = Dungeon.Area.LOAD
+
+            if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
+                (top, bottom) = tuple(sorted(set(np.where(self.__dungeon_map==Dungeon.Area.LOAD)[0])))
+                sub_binary_tree_map.sub_map[top:bottom+1, sub_binary_tree_map.boundary_line] = Dungeon.Area.LOAD
+            if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
+                (left, right) = tuple(sorted(set(np.where(self.__dungeon_map==Dungeon.Area.LOAD)[1])))
+                sub_binary_tree_map.sub_map[sub_binary_tree_map.boundary_line, left:right+1] = Dungeon.Area.LOAD
+            sub_binary_tree_map.sub_map[sub_binary_tree_map.sub_map==Dungeon.Area.LOAD] = Dungeon.Area.ROOM
+
         binary_tree_map = BinaryTree()
         binary_tree_map.root = split_map(self.__dungeon_map)
         for node in BinaryTree.get_leaf_node(binary_tree_map.root):
             create_room(node.sub_map)
+        create_load(binary_tree_map.root)
+
+
+if __name__=="__main__":
+    print(Dungeon(10, 15))
+    print(Dungeon(15, 10))
