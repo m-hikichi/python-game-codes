@@ -18,7 +18,7 @@ class Dungeon:
         self.__dungeon_height = dungeon_height
 
         self.__dungeon_map = np.full((self.__dungeon_height, self.__dungeon_width), Dungeon.Area.WALL)
-        self.__create_rooms()
+        self.__generate_dungeon()
 
     def __str__(self) -> str:
         dungeon_representation = ""
@@ -28,7 +28,7 @@ class Dungeon:
             dungeon_representation += "\n"
         return dungeon_representation
 
-    def __create_rooms(self):
+    def __generate_dungeon(self):
         class Node:
             def __init__(self):
                 self.left_node = None
@@ -48,6 +48,15 @@ class Dungeon:
                 if node.right_node is not None:
                     yield from BinaryTree.get_leaf_node(node.right_node)
                 if node.left_node is None and node.right_node is None:
+                    yield node
+
+            @staticmethod
+            def get_internal_node(node):
+                if node.left_node is not None:
+                    yield from BinaryTree.get_internal_node(node.left_node)
+                if node.right_node is not None:
+                    yield from BinaryTree.get_internal_node(node.right_node)
+                if node.left_node is not None or node.right_node is not None:
                     yield node
 
         @unique
@@ -92,7 +101,7 @@ class Dungeon:
                 return
 
             room_width = random.randint(Dungeon.MIN_ROOM_WIDTH, sub_map_width-(Dungeon.ROOM_MARGIN*2))
-            room_height = random.randint(Dungeon.MIN_ROOM_WIDTH, sub_map_height-(Dungeon.ROOM_MARGIN*2))
+            room_height = random.randint(Dungeon.MIN_ROOM_HEIGHT, sub_map_height-(Dungeon.ROOM_MARGIN*2))
             room_left_upper_x = random.randint(0+Dungeon.ROOM_MARGIN, sub_map_width-(room_width+Dungeon.ROOM_MARGIN))
             room_left_upper_y = random.randint(0+Dungeon.ROOM_MARGIN, sub_map_height-(room_height+Dungeon.ROOM_MARGIN))
 
@@ -118,10 +127,10 @@ class Dungeon:
                 right_node.sub_map[0:right_node_map_y+1, right_node_map_x] = Dungeon.Area.LOAD
 
             if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
-                (top, bottom) = tuple(sorted(set(np.where(self.__dungeon_map==Dungeon.Area.LOAD)[0])))
+                (top, bottom) = tuple(sorted(set(np.where(sub_binary_tree_map.sub_map==Dungeon.Area.LOAD)[0])))
                 sub_binary_tree_map.sub_map[top:bottom+1, sub_binary_tree_map.boundary_line] = Dungeon.Area.LOAD
             if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
-                (left, right) = tuple(sorted(set(np.where(self.__dungeon_map==Dungeon.Area.LOAD)[1])))
+                (left, right) = tuple(sorted(set(np.where(sub_binary_tree_map.sub_map==Dungeon.Area.LOAD)[1])))
                 sub_binary_tree_map.sub_map[sub_binary_tree_map.boundary_line, left:right+1] = Dungeon.Area.LOAD
             sub_binary_tree_map.sub_map[sub_binary_tree_map.sub_map==Dungeon.Area.LOAD] = Dungeon.Area.ROOM
 
@@ -129,9 +138,5 @@ class Dungeon:
         binary_tree_map.root = split_map(self.__dungeon_map)
         for node in BinaryTree.get_leaf_node(binary_tree_map.root):
             create_room(node.sub_map)
-        create_load(binary_tree_map.root)
-
-
-if __name__=="__main__":
-    print(Dungeon(10, 15))
-    print(Dungeon(15, 10))
+        for node in BinaryTree.get_internal_node(binary_tree_map.root):
+            create_load(node)
