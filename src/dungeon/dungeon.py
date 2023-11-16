@@ -8,10 +8,15 @@ class Dungeon:
     MIN_ROOM_HEIGHT = 3
     ROOM_MARGIN = 1
 
+    @unique
     class Area(Enum):
-        WALL = "■"
-        ROOM = " "
-        LOAD = "X"
+        WALL = ("WALL", "■")
+        ROOM = ("ROOM", " ")
+        LOAD = ("LOAD", " ")
+
+        def __init__(self, symbol, disp_char):
+            self.symbol = symbol
+            self.disp_char = disp_char
 
     def __init__(self, dungeon_width, dungeon_height):
         self.__dungeon_width = dungeon_width
@@ -24,7 +29,7 @@ class Dungeon:
         dungeon_representation = ""
         for rows in self.__dungeon_map:
             for area in rows:
-                dungeon_representation += area.value
+                dungeon_representation += area.disp_char
             dungeon_representation += "\n"
         return dungeon_representation
 
@@ -52,12 +57,12 @@ class Dungeon:
 
             @staticmethod
             def get_internal_node(node):
+                if node.left_node is not None or node.right_node is not None:
+                    yield node
                 if node.left_node is not None:
                     yield from BinaryTree.get_internal_node(node.left_node)
                 if node.right_node is not None:
                     yield from BinaryTree.get_internal_node(node.right_node)
-                if node.left_node is not None or node.right_node is not None:
-                    yield node
 
         @unique
         class SplitDirection(Enum):
@@ -113,26 +118,26 @@ class Dungeon:
             left_node_map_y = np.where(left_node.sub_map==Dungeon.Area.ROOM)[0][-1]
             left_node_sub_map_height, left_node_sub_map_width = left_node.sub_map.shape
             if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
-                left_node.sub_map[left_node_map_y, left_node_map_x:left_node_sub_map_width] = Dungeon.Area.LOAD
+                left_node.sub_map[left_node_map_y, left_node_map_x+1:left_node_sub_map_width] = None
             if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
-                left_node.sub_map[left_node_map_y:left_node_sub_map_height, left_node_map_x] = Dungeon.Area.LOAD
+                left_node.sub_map[left_node_map_y+1:left_node_sub_map_height, left_node_map_x] = None
 
             right_node = list(BinaryTree.get_leaf_node(sub_binary_tree_map.right_node))[0]
             right_node_map_x = np.where(right_node.sub_map==Dungeon.Area.ROOM)[1][0]
             right_node_map_y = np.where(right_node.sub_map==Dungeon.Area.ROOM)[0][0]
             right_node_sub_map_height, right_node_sub_map_width = right_node.sub_map.shape
             if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
-                right_node.sub_map[right_node_map_y, 0:right_node_map_x+1] = Dungeon.Area.LOAD
+                right_node.sub_map[right_node_map_y, 0:right_node_map_x] = None
             if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
-                right_node.sub_map[0:right_node_map_y+1, right_node_map_x] = Dungeon.Area.LOAD
+                right_node.sub_map[0:right_node_map_y, right_node_map_x] = None
 
             if sub_binary_tree_map.split_direction == SplitDirection.HORIZON:
-                (top, bottom) = tuple(sorted(set(np.where(sub_binary_tree_map.sub_map==Dungeon.Area.LOAD)[0])))
+                (top, bottom) = tuple(sorted(set(np.where(sub_binary_tree_map.sub_map==None)[0])))
                 sub_binary_tree_map.sub_map[top:bottom+1, sub_binary_tree_map.boundary_line] = Dungeon.Area.LOAD
             if sub_binary_tree_map.split_direction == SplitDirection.VERTICAL:
-                (left, right) = tuple(sorted(set(np.where(sub_binary_tree_map.sub_map==Dungeon.Area.LOAD)[1])))
+                (left, right) = tuple(sorted(set(np.where(sub_binary_tree_map.sub_map==None)[1])))
                 sub_binary_tree_map.sub_map[sub_binary_tree_map.boundary_line, left:right+1] = Dungeon.Area.LOAD
-            sub_binary_tree_map.sub_map[sub_binary_tree_map.sub_map==Dungeon.Area.LOAD] = Dungeon.Area.ROOM
+            sub_binary_tree_map.sub_map[sub_binary_tree_map.sub_map==None] = Dungeon.Area.LOAD
 
         binary_tree_map = BinaryTree()
         binary_tree_map.root = split_map(self.__dungeon_map)
