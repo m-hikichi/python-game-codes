@@ -1,0 +1,40 @@
+name: Docker Compose Python CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx (for caching etc.)
+      uses: docker/setup-buildx-action@v3
+
+    - name: Set up Docker Compose
+      run: |
+        docker compose version || docker-compose version
+
+    - name: Build and start containers
+      run: |
+        docker compose -f docker-compose/docker-compose.yml up -d --build
+
+    - name: Install pytest inside container
+      run: |
+        docker compose -f docker-compose/docker-compose.yml exec -T dev pip install pytest
+      # ↑ `dev` はサービス名。必要に応じて変更
+
+    - name: Run tests inside containers
+      run: |
+        docker compose -f docker-compose/docker-compose.yml exec -T dev pytest
+
+    - name: Shut down containers
+      if: always()
+      run: |
+        docker compose -f docker-compose/docker-compose.yml down
